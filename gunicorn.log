@@ -1,0 +1,8 @@
+[2026-08-23 02:32:34 +0000] [522] [INFO] Starting gunicorn 26.1.0
+[2026-08-23 02:32:34 +0000] [522] [INFO] Listening at: http://0.0.0.0:8000 (522)
+[2026-08-23 02:32:34 +0000] [522] [INFO] Using worker: sync
+[2026-08-23 02:32:34 +0000] [524] [INFO] Booting worker with pid: 524
+[2026-08-23 02:32:34 +0000] [522] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+/usr/local/lib/python3.12/dist-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.4.0.post2)/charset_normalizer (3.4.6) doesn't match a supported version!
+  warnings.warn(
+[scheduler] Automatic retraining enabled - every 30 minutes

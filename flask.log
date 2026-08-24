@@ -1,0 +1,35 @@
+/usr/local/lib/python3.12/dist-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.4.0.post2)/charset_normalizer (3.4.6) doesn't match a supported version!
+  warnings.warn(
+[scheduler] Automatic retraining enabled - every 30 minutes
+ * Serving Flask app 'app'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://192.0.2.2:8000
+Press CTRL+C to quit
+127.0.0.1 - - [14/Aug/2026 06:40:10] "GET /health HTTP/1.1" 200 -
+[retrain] Could not fetch verified data from backend (http://localhost:5000): HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /api/alerts/training-data (Caused by NewConnectionError("HTTPConnection(host='localhost', port=5000): Failed to establish a new connection: [Errno 111] Connection refused"))
+[retrain] No verified real data available yet - training on 2000 synthetic samples only
+=== Classification report ===
+              precision    recall  f1-score   support
+
+ false_alarm       0.95      0.98      0.96       200
+        fire       0.98      0.94      0.96       200
+
+    accuracy                           0.96       400
+   macro avg       0.96      0.96      0.96       400
+weighted avg       0.96      0.96      0.96       400
+
+=== Confusion matrix (rows=actual, cols=predicted) ===
+classes: ['false_alarm' 'fire']
+[[196   4]
+ [ 11 189]]
+
+Saved trained model to /home/claude/ml-service/model/fire_model.joblib
+127.0.0.1 - - [14/Aug/2026 06:40:13] "POST /retrain HTTP/1.1" 200 -
+/usr/local/lib/python3.12/dist-packages/sklearn/base.py:493: UserWarning: X does not have valid feature names, but RandomForestClassifier was fitted with feature names
+  warnings.warn(
+/usr/local/lib/python3.12/dist-packages/sklearn/base.py:493: UserWarning: X does not have valid feature names, but RandomForestClassifier was fitted with feature names
+  warnings.warn(
+127.0.0.1 - - [14/Aug/2026 06:40:17] "POST /predict HTTP/1.1" 200 -
