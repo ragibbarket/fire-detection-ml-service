@@ -29,12 +29,46 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 import joblib
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+def env_float(name, default):
+    raw = os.environ.get(name, "")
+    try:
+        return float(raw) if raw != "" else float(default)
+    except ValueError:
+        return float(default)
+
 
 RANDOM_SEED = 42
 np.random.seed(RANDOM_SEED)
 
 N_SAMPLES_PER_CLASS = 1000
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "model", "fire_model.joblib")
+
+
+# ---- Synthetic-data ranges, all overridable from .env ------------------
+# Each class draws smoke / temperature / humidity uniformly from [MIN, MAX]
+# and the flame sensor is "on" with probability FLAME_PROB. Changing any of
+# these changes what the model learns, so re-run `python train_model.py`
+# (delete model/fire_model.joblib first) or POST /retrain afterwards.
+FIRE_FLAME_PROB = env_float("TRAIN_FIRE_FLAME_PROB", 0.85)
+FIRE_SMOKE_MIN = env_float("TRAIN_FIRE_SMOKE_MIN", 380)
+FIRE_SMOKE_MAX = env_float("TRAIN_FIRE_SMOKE_MAX", 800)
+FIRE_TEMP_MIN = env_float("TRAIN_FIRE_TEMP_MIN", 40)
+FIRE_TEMP_MAX = env_float("TRAIN_FIRE_TEMP_MAX", 70)
+FIRE_HUMIDITY_MIN = env_float("TRAIN_FIRE_HUMIDITY_MIN", 15)
+FIRE_HUMIDITY_MAX = env_float("TRAIN_FIRE_HUMIDITY_MAX", 45)
+
+FALSE_FLAME_PROB = env_float("TRAIN_FALSE_FLAME_PROB", 0.10)
+FALSE_SMOKE_MIN = env_float("TRAIN_FALSE_SMOKE_MIN", 280)
+FALSE_SMOKE_MAX = env_float("TRAIN_FALSE_SMOKE_MAX", 560)
+FALSE_TEMP_MIN = env_float("TRAIN_FALSE_TEMP_MIN", 30)
+FALSE_TEMP_MAX = env_float("TRAIN_FALSE_TEMP_MAX", 50)
+FALSE_HUMIDITY_MIN = env_float("TRAIN_FALSE_HUMIDITY_MIN", 30)
+FALSE_HUMIDITY_MAX = env_float("TRAIN_FALSE_HUMIDITY_MAX", 65)
 
 
 def generate_synthetic_data(n_per_class=N_SAMPLES_PER_CLASS):
@@ -52,17 +86,17 @@ def generate_synthetic_data(n_per_class=N_SAMPLES_PER_CLASS):
     rows = []
 
     for _ in range(n_per_class):
-        flame = 1 if np.random.rand() < 0.85 else 0
-        smoke = np.random.uniform(380, 800) + np.random.normal(0, 25)
-        temp = np.random.uniform(40, 70) + np.random.normal(0, 2)
-        humidity = np.random.uniform(15, 45) + np.random.normal(0, 3)
+        flame = 1 if np.random.rand() < FIRE_FLAME_PROB else 0
+        smoke = np.random.uniform(FIRE_SMOKE_MIN, FIRE_SMOKE_MAX) + np.random.normal(0, 25)
+        temp = np.random.uniform(FIRE_TEMP_MIN, FIRE_TEMP_MAX) + np.random.normal(0, 2)
+        humidity = np.random.uniform(FIRE_HUMIDITY_MIN, FIRE_HUMIDITY_MAX) + np.random.normal(0, 3)
         rows.append([flame, smoke, temp, humidity, "fire"])
 
     for _ in range(n_per_class):
-        flame = 1 if np.random.rand() < 0.10 else 0
-        smoke = np.random.uniform(280, 560) + np.random.normal(0, 25)
-        temp = np.random.uniform(30, 50) + np.random.normal(0, 2)
-        humidity = np.random.uniform(30, 65) + np.random.normal(0, 3)
+        flame = 1 if np.random.rand() < FALSE_FLAME_PROB else 0
+        smoke = np.random.uniform(FALSE_SMOKE_MIN, FALSE_SMOKE_MAX) + np.random.normal(0, 25)
+        temp = np.random.uniform(FALSE_TEMP_MIN, FALSE_TEMP_MAX) + np.random.normal(0, 2)
+        humidity = np.random.uniform(FALSE_HUMIDITY_MIN, FALSE_HUMIDITY_MAX) + np.random.normal(0, 3)
         rows.append([flame, smoke, temp, humidity, "false_alarm"])
 
     df = pd.DataFrame(rows, columns=["flameDetected", "smokeValue", "temperature", "humidity", "label"])

@@ -39,13 +39,21 @@ import atexit
 load_dotenv()
 
 from retrain import retrain
-from train_model import MODEL_PATH, generate_synthetic_data, train_and_save
+from train_model import MODEL_PATH, generate_synthetic_data, train_and_save, env_float
 
 app = Flask(__name__)
 
 model = None
 last_verified_count = 0  # avoids pointless retraining when nothing new was verified
 RETRAIN_INTERVAL_MINUTES = int(os.environ.get("RETRAIN_INTERVAL_MINUTES", 30))
+
+# Thresholds used only to word the plain-language explanation (they do not
+# change the prediction itself). All overridable from .env.
+SMOKE_HIGH = env_float("SMOKE_HIGH_THRESHOLD", 450)          # ppm, "typical of real fires"
+SMOKE_ELEVATED = env_float("SMOKE_ELEVATED_THRESHOLD", 300)  # ppm, "elevated"
+TEMP_HIGH = env_float("TEMP_HIGH_THRESHOLD", 45)             # deg C, "consistent with fire"
+TEMP_ELEVATED = env_float("TEMP_ELEVATED_THRESHOLD", 32)     # deg C, "elevated"
+HUMIDITY_LOW = env_float("HUMIDITY_LOW_THRESHOLD", 40)       # %, "low"
 
 
 def load_model():
@@ -96,21 +104,21 @@ def generate_reasoning(data, prediction, confidence):
     else:
         reasons.append("no flame was detected by the sensor")
 
-    if smoke >= 450:
+    if smoke >= SMOKE_HIGH:
         reasons.append(f"smoke level ({smoke:.0f} ppm) is in the range typically seen during real fires")
-    elif smoke >= 300:
+    elif smoke >= SMOKE_ELEVATED:
         reasons.append(f"smoke level ({smoke:.0f} ppm) is elevated but also consistent with cooking, steam, or dust")
     else:
         reasons.append(f"smoke level ({smoke:.0f} ppm) is close to normal background levels")
 
-    if temp >= 45:
+    if temp >= TEMP_HIGH:
         reasons.append(f"temperature ({temp:.1f}C) is high enough to be consistent with fire")
-    elif temp >= 32:
+    elif temp >= TEMP_ELEVATED:
         reasons.append(f"temperature ({temp:.1f}C) is elevated but not extreme")
     else:
         reasons.append(f"temperature ({temp:.1f}C) is within a normal range")
 
-    if humidity <= 40:
+    if humidity <= HUMIDITY_LOW:
         reasons.append(f"humidity ({humidity:.0f}%) is low, which is common near an active fire")
     else:
         reasons.append(f"humidity ({humidity:.0f}%) is within a normal range")
